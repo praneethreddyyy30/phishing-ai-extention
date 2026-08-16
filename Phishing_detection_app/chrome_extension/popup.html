@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Phishing Detector</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #4F46E5;
+      --primary-hover: #4338CA;
+      --bg: #0F172A;
+      --card-bg: rgba(30, 41, 59, 0.7);
+      --text: #F8FAFC;
+      --text-muted: #94A3B8;
+      --safe: #10B981;
+      --phishing: #EF4444;
+      --border: rgba(255, 255, 255, 0.1);
+    }
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      width: 320px;
+      background: var(--bg);
+      background-image: radial-gradient(circle at top right, rgba(79, 70, 229, 0.15), transparent 60%);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 280px;
+    }
+
+    .container {
+      width: 100%;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-radius: 16px;
+      padding: 24px;
+      text-align: center;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+      transition: all 0.3s ease;
+    }
+
+    .icon-container {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 16px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      border: 1px solid var(--border);
+      box-shadow: inset 0 0 10px rgba(255,255,255,0.02);
+      transition: transform 0.3s ease, background 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+    }
+
+    h2 {
+      margin: 0 0 8px;
+      font-size: 20px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+    
+    p.subtitle {
+      margin: 0 0 24px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 10px;
+      background: var(--primary);
+      color: white;
+      font-size: 14px;
+      font-weight: 500;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.3);
+    }
+
+    button:hover:not(:disabled) {
+      background: var(--primary-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 8px -1px rgba(79, 70, 229, 0.4);
+    }
+
+    button:active:not(:disabled) {
+      transform: translateY(1px);
+      box-shadow: 0 2px 4px -1px rgba(79, 70, 229, 0.3);
+    }
+
+    button:disabled {
+      background: #334155;
+      color: #94A3B8;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    #result-container {
+      margin-top: 20px;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      display: none;
+    }
+    
+    #result-container.show {
+      opacity: 1;
+      transform: translateY(0);
+      display: block;
+    }
+
+    #result {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .safe {
+      color: var(--safe);
+      text-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+    }
+
+    .phishing {
+      color: var(--phishing);
+      text-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
+    }
+
+    .loading-text {
+      color: var(--text-muted);
+    }
+
+    .url-box {
+      font-size: 11px;
+      color: var(--text-muted);
+      background: rgba(0, 0, 0, 0.2);
+      padding: 8px 12px;
+      border-radius: 8px;
+      word-break: break-all;
+      border: 1px solid rgba(255,255,255,0.05);
+      margin-top: 12px;
+      max-height: 40px;
+      overflow-y: auto;
+    }
+    
+    /* Animations */
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+    
+    .loading-icon {
+      animation: pulse 1.5s infinite;
+    }
+
+    /* Scrollbar for URL box */
+    ::-webkit-scrollbar {
+      width: 4px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #475569;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <div class="icon-container" id="main-icon">🛡️</div>
+      <h2>Secure Web</h2>
+      <p class="subtitle">AI-powered phishing detection</p>
+
+      <button id="checkBtn">Scan Current Page</button>
+
+      <div id="result-container">
+        <div id="result"></div>
+        <div id="urlDisplay" class="url-box"></div>
+      </div>
+    </div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>
