@@ -22,18 +22,22 @@ function extractFeatures(url) {
 
 document.getElementById('checkBtn').addEventListener('click', async () => {
   try {
-    // Get the current active tab
+    // Get current tab
     let [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     const url = tab.url;
 
-    const features = extractFeatures(url);
+    // API Call 
 
-    // Send features to your Flask API
-    const response = await fetch('http://127.0.0.1:5000/predict', {
+    // IMPORTANT: When deploying to Render, change this URL to your Render deployment URL
+    // Example: 'https://phishing-detection-api-xxxxx.onrender.com/predict'
+    const API_URL = 'http://127.0.0.1:5000/predict'; 
+
+    const response = await fetch(API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(features)
+      body: JSON.stringify({ url: url })
     });
+
 
     const data = await response.json();
 

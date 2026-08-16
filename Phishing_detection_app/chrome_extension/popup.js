@@ -49,8 +49,6 @@ document.getElementById('checkBtn').addEventListener('click', async () => {
     // Display URL
     urlBox.textContent = url;
 
-    const features = extractFeatures(url);
-
     // API Call 
     // IMPORTANT: When deploying to Render, change this URL to your Render deployment URL
     // Example: 'https://phishing-detection-api-xxxxx.onrender.com/predict'
@@ -59,8 +57,9 @@ document.getElementById('checkBtn').addEventListener('click', async () => {
     const response = await fetch(API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(features)
+      body: JSON.stringify({ url: url })
     });
+
 
     const data = await response.json();
 

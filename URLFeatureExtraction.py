@@ -167,10 +167,15 @@ Each of these features are explained and the coded below:
 # importing required packages for this section
 import re
 from bs4 import BeautifulSoup
-#import whois
+import whois
+import socket
 import urllib
 import urllib.request
 from datetime import datetime
+
+# Set default timeout for socket operations (like WHOIS lookups) to prevent hanging
+socket.setdefaulttimeout(3)
+
 
 """#### **3.2.1. DNS Record**
 
@@ -196,12 +201,13 @@ def web_traffic(url):
     rank = BeautifulSoup(urllib.request.urlopen("http://data.alexa.com/data?cli=10&dat=s&url=" + url).read(), "xml").find(
         "REACH")['RANK']
     rank = int(rank)
-  except TypeError:
+  except Exception:
         return 1
   if rank <100000:
     return 1
   else:
     return 0
+
 
 """#### **3.2.3. Age of Domain**
 
@@ -212,8 +218,11 @@ If age of domain > 12 months, the vlaue of this feature is 1 (phishing) else 0 (
 
 # 13.Survival time of domain: The difference between termination time and creation time (Domain_Age)  
 def domainAge(domain_name):
-  creation_date = domain_name.creation_date
-  expiration_date = domain_name.expiration_date
+  try:
+    creation_date = domain_name.creation_date
+    expiration_date = domain_name.expiration_date
+  except Exception:
+    return 1
   if (isinstance(creation_date,str) or isinstance(expiration_date,str)):
     try:
       creation_date = datetime.strptime(creation_date,'%Y-%m-%d')
@@ -241,7 +250,10 @@ If end period of domain > 6 months, the vlaue of this feature is 1 (phishing) el
 
 # 14.End time of domain: The difference between termination time and current time (Domain_End) 
 def domainEnd(domain_name):
-  expiration_date = domain_name.expiration_date
+  try:
+    expiration_date = domain_name.expiration_date
+  except Exception:
+    return 1
   if isinstance(expiration_date,str):
     try:
       expiration_date = datetime.strptime(expiration_date,"%Y-%m-%d")
@@ -374,9 +386,10 @@ def featureExtraction(url):
   
   # HTML & Javascript based features
   try:
-    response = requests.get(url)
+    response = requests.get(url, timeout=5)
   except:
     response = ""
+
 
   features.append(iframe(response))
   features.append(mouseOver(response))

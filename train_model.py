@@ -1,9 +1,10 @@
 import os
 import pandas as pd
 from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import accuracy_score
+import xgboost as xgb
 import pickle
 
 # Define the path to the data file
@@ -31,8 +32,9 @@ X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.2, random_state=42
 )
 
-# Train a Random Forest model
-rf_model = RandomForestClassifier(n_estimators=100, random_state=42)
+# Train a Tuned Random Forest model
+print("Training Tuned Random Forest model...")
+rf_model = RandomForestClassifier(n_estimators=500, random_state=42)
 rf_model.fit(X_train, y_train)
 
 # Evaluate the Random Forest model
@@ -40,19 +42,31 @@ rf_pred = rf_model.predict(X_test)
 rf_accuracy = accuracy_score(y_test, rf_pred)
 print(f'Random Forest Accuracy: {rf_accuracy * 100:.2f}%')
 
-# Save the Random Forest model
+# Save the Random Forest model to both random_forest_model.pkl and xg_boost.pkl (for backward compatibility)
 with open(os.path.join(current_dir, 'random_forest_model.pkl'), 'wb') as file:
     pickle.dump(rf_model, file)
+with open(os.path.join(current_dir, 'xg_boost.pkl'), 'wb') as file:
+    pickle.dump(rf_model, file)
 
-# Train an XGBoost model (you can install xgboost via pip for real XGBoost)
-gb_model = GradientBoostingClassifier(n_estimators=100, random_state=42)
-gb_model.fit(X_train, y_train)
+# Train a real, tuned XGBoost model
+print("Training Tuned XGBoost model...")
+xgb_model = xgb.XGBClassifier(
+    n_estimators=500,
+    max_depth=8,
+    learning_rate=0.02,
+    subsample=0.8,
+    colsample_bytree=0.8,
+    random_state=42,
+    eval_metric='logloss'
+)
+xgb_model.fit(X_train, y_train)
 
-# Evaluate the Gradient Boosting model
-gb_pred = gb_model.predict(X_test)
-gb_accuracy = accuracy_score(y_test, gb_pred)
-print(f'Gradient Boosting Accuracy: {gb_accuracy * 100:.2f}%')
+# Evaluate the XGBoost model
+xgb_pred = xgb_model.predict(X_test)
+xgb_accuracy = accuracy_score(y_test, xgb_pred)
+print(f'XGBoost Accuracy: {xgb_accuracy * 100:.2f}%')
 
-# Save the Gradient Boosting model
+# Save the XGBoost model
 with open(os.path.join(current_dir, 'xgboost_model.pkl'), 'wb') as file:
-    pickle.dump(gb_model, file)
+    pickle.dump(xgb_model, file)
+
